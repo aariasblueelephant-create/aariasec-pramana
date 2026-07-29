@@ -1,0 +1,89 @@
+name: verify submission
+
+# Runs on submissions to RETIRED seasons only.
+#
+# Safe by construction, and worth spelling out why:
+#   * plain `pull_request`, not `pull_request_target` — no secrets are needed, so a
+#     fork PR gets none and there is nothing to steal;
+#   * we never execute submitted code. The only thing read from the PR is a .jsonl
+#     data file, parsed by our own scorer;
+#   * retired-season labels are already public, so there is no label-extraction
+#     risk. That risk is exactly why the LIVE season is not auto-scored: a
+#     submitter could probe one label per submission by flipping a single trace and
+#     watching recall move, and ~520 submissions would recover the whole answer key.
+#
+# For the live season, scoring stays human-gated in the private repo.
+
+on:
+  pull_request:
+    paths:
+      - 'submissions/**.jsonl'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Score every submitted file against the retired-season labels
+        id: score
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          : > /tmp/report.md
+          found=0
+          for f in submissions/*.jsonl; do
+            found=1
+            season=v1
+            case "$f" in *-v2.jsonl|*_v2.jsonl) season=v2 ;; esac
+            labels="corpus/$season/holdout_labels.jsonl"
+            echo "### \`$(basename "$f")\` — season $season" >> /tmp/report.md
+            if [ ! -f "$labels" ]; then
+              {
+                echo
+                echo "Season **$season** is still LIVE — its labels are withheld, so this"
+                echo "cannot be scored automatically. A maintainer will score it against the"
+                echo "held-back labels and post the result. Only retired seasons self-verify."
+                echo
+              } >> /tmp/report.md
+              continue
+            fi
+            echo '```' >> /tmp/report.md
+            python score.py --labels "$labels" --predictions "$f" >> /tmp/report.md 2>&1 || {
+              echo '```' >> /tmp/report.md
+              echo '⚠️ scoring failed — check the format in `submissions/README.md`.' >> /tmp/report.md
+              continue
+            }
+            echo '```' >> /tmp/report.md
+          done
+          if [ "$found" = "0" ]; then
+            echo 'No `submissions/*.jsonl` found in this PR.' >> /tmp/report.md
+          fi
+          {
+            echo
+            echo '---'
+            echo 'Scored by `score.py` against the **public** labels of a retired season, so'
+            echo 'you can reproduce this locally and so can anyone else — that is the point of'
+            echo 'retiring a season. Nothing here trusts us.'
+          } >> /tmp/report.md
+          cat /tmp/report.md
+
+      - name: Comment the score on the PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('/tmp/report.md', 'utf8');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });
