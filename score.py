@@ -1,5 +1,23 @@
 #!/usr/bin/env python3
-# Copyright (c) 2026 AariaSec. All rights reserved. Patent pending.
+# Copyright (c) 2026 AariaSec. The AariaSec platform is the subject of a pending US
+# provisional patent application; rights in this benchmark construction are reserved.
+#
+# NOTE — this header deliberately differs from the repo-wide copyright boilerplate,
+# and the difference is load-bearing. Do not "fix" it back to match other files.
+#
+# This file is PUBLISHED: push_pramana_public.py copies it to the public repo as
+# `score.py`, so its header is a public legal statement rather than an internal
+# convention. The unqualified boilerplate asserts a pending application over whatever
+# it is attached to; attached to the benchmark scorer that overstates the position,
+# because the 2026-03-25 provisional covers C1-C23 while the benchmark construction
+# (C219) was conceived 2026-07-28 and is unfiled. The wording above is what
+# docs/patent/COUNSEL_BRIEF_2026-09-25_CONTINUATION.md Item 4 identifies as accurate
+# with nothing on file, and it matches the public README.
+#
+# The boilerplate shipped here on 2026-07-29 because it is applied automatically to
+# every file in the repository and nothing examined it at the point it became public.
+# verify_pramana_public_safe.py now fails any publication containing it — which is
+# also why this comment describes the phrase instead of quoting it.
 """Score a PRAMANA submission against a season's held-back labels.
 
 A submission is one JSONL line per trace::
