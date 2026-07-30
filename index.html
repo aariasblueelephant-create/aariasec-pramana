@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PRAMANA v1 — agent-compromise detection benchmark</title>
+<title>PRAMANA v3 — agent-compromise detection benchmark</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23BF5AF2' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='m12 14 4-4'/%3E%3Cpath d='M3.34 19a10 10 0 1 1 17.32 0'/%3E%3C/svg%3E">
 <style>
 :root{--bg:#fbfaf8;--fg:#1a1a19;--mut:#5f5d58;--rule:#e4e1da;--card:#fff;
@@ -74,14 +74,14 @@ color:var(--mut)}
 <div class="brand">
   <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg></span>
   <div>
-    <div class="kick">Open benchmark · season v1</div>
+    <div class="kick">Open benchmark · season v3</div>
     <h1>PRAMANA</h1>
   </div>
 </div>
 <p class="sub">The agent-compromise <b>detection</b> benchmark. Given behavioural
 telemetry and nothing else, can a monitoring system tell a compromised AI agent
 from a healthy one?</p>
-<span class="season">season v1</span>
+<span class="season">season v3</span>
 
 <div class="banner">
 <b>Published and open to submissions.</b> The corpus, this leaderboard and the
@@ -90,9 +90,13 @@ scoring script are at
 Run your detector on your own hardware and open a pull request — we never execute
 submitted code.
 <br><br>
-<b>Season v1 is retired</b> — its labels are published, so you score yourself and
-anyone can re-run it and check you. <b>Season v2 is live</b> — labels withheld, so a
-maintainer scores it. Each new season retires the previous one; a holdout that stays
+<b>Seasons v1 and v2 are WITHDRAWN</b> — both were defective as evaluations and every
+score measured against them is void, ours included. A one-line detector beat every real
+entry on those boards.
+<a href="withdrawn/">What broke, and why</a>.
+<br><br>
+<b>Season v3 is live</b> — labels withheld, so a maintainer scores submissions. A
+retired season publishes its labels and becomes self-service; a holdout that stays
 public forever just gets tuned against.
 <br><br>
 <b>Withheld deliberately:</b> the live season's labels, the labelled development
@@ -119,9 +123,9 @@ text cannot release their corpus without exposing customer prompts.</p>
 </div>
 <table><thead><tr><th>#</th><th>Detector</th><th>Provenance</th>
 <th>Balanced<span class="dir up" title="higher is better">&uarr;</span><i class="tip" title="The headline score, 0 to 1. (mean recall + (1 - false-positive rate)) / 2 — recall and false alarms weighted EQUALLY. A detector that flags everything and one that flags nothing both score exactly 0.5, so noise is penalised as hard as blindness. Higher is better.">i</i></th><th>Mean recall<span class="dir up" title="higher is better">&uarr;</span><i class="tip" title="Of the attacks present, what fraction did this detector catch? Averaged across the 13 attack archetypes with equal weight, so being excellent at one and blind to another does not average away. 1.0 = caught everything. Higher is better.">i</i></th><th>FP rate<span class="dir down" title="lower is better">&darr;</span><i class="tip" title="False-positive rate: of the genuinely BENIGN traces, what fraction did this detector wrongly flag as an attack? This is the alert-fatigue number — 0.05 means one in twenty normal sessions pages someone at 3am. LOWER is better, the opposite of the other columns.">i</i></th><th>Weakest archetype<span class="dir flat" title="diagnostic"></span><i class="tip" title="The attack type this detector caught least often, with its recall. Not a score — a diagnostic. It is published deliberately: a leaderboard where every entry looks uniformly strong is hiding where each one fails.">i</i></th></tr></thead>
-<tbody><tr><td class='num'>1</td><td><b>AariaSec 3.0.0 (rule engine, baseline-aware)</b></td><td><span class='who vendor'>run by AariaSec</span></td><td class='num'>0.8126</td><td class='num'>0.6367</td><td class='num'>0.0115</td><td class='weak'>attack_class_10 (0.000)</td></tr><tr><td class='num'>2</td><td><b>sigma-3</b></td><td><span class='who vendor'>run by AariaSec</span></td><td class='num'>0.6807</td><td class='num'>0.3653</td><td class='num'>0.0038</td><td class='weak'>attack_class_03 (0.000)</td></tr><tr><td class='num'>3</td><td><b>naive-egress</b></td><td><span class='who vendor'>run by AariaSec</span></td><td class='num'>0.6625</td><td class='num'>0.3982</td><td class='num'>0.0731</td><td class='weak'>attack_class_01 (0.000)</td></tr><tr><td class='num'>4</td><td><b>always-benign</b></td><td><span class='who vendor'>run by AariaSec</span></td><td class='num'>0.5000</td><td class='num'>0.0000</td><td class='num'>0.0000</td><td class='weak'>attack_class_01 (0.000)</td></tr><tr><td class='num'>5</td><td><b>always-attack</b></td><td><span class='who vendor'>run by AariaSec</span></td><td class='num'>0.5000</td><td class='num'>1.0000</td><td class='num'>1.0000</td><td class='weak'>attack_class_01 (1.000)</td></tr><tr><td class='num'>6</td><td><b>drift-tail</b></td><td><span class='who vendor'>run by AariaSec</span></td><td class='num'>0.5000</td><td class='num'>0.0000</td><td class='num'>0.0000</td><td class='weak'>attack_class_01 (0.000)</td></tr></tbody></table>
+<tbody><tr><td class='num'>1</td><td><b>AariaSec 3.0.0 (rules + fleet drift, persistence-gated)</b></td><td><span class='who vendor'>run by AariaSec</span></td><td class='num'>0.9505</td><td class='num'>0.9471</td><td class='num'>0.0462</td><td class='weak'>attack_class_12 (0.714)</td></tr><tr><td class='num'>2</td><td><b>drift-tail</b></td><td><span class='who vendor'>run by AariaSec</span></td><td class='num'>0.9115</td><td class='num'>0.9846</td><td class='num'>0.1615</td><td class='weak'>attack_class_03 (0.800)</td></tr><tr><td class='num'>3</td><td><b>sigma-3</b></td><td><span class='who vendor'>run by AariaSec</span></td><td class='num'>0.7968</td><td class='num'>0.6704</td><td class='num'>0.0769</td><td class='weak'>attack_class_03 (0.000)</td></tr><tr><td class='num'>4</td><td><b>naive-egress</b></td><td><span class='who vendor'>run by AariaSec</span></td><td class='num'>0.6577</td><td class='num'>0.7769</td><td class='num'>0.4615</td><td class='weak'>attack_class_01 (0.000)</td></tr><tr><td class='num'>5</td><td><b>always-benign</b></td><td><span class='who vendor'>run by AariaSec</span></td><td class='num'>0.5000</td><td class='num'>0.0000</td><td class='num'>0.0000</td><td class='weak'>attack_class_01 (0.000)</td></tr><tr><td class='num'>6</td><td><b>always-attack</b></td><td><span class='who vendor'>run by AariaSec</span></td><td class='num'>0.5000</td><td class='num'>1.0000</td><td class='num'>1.0000</td><td class='weak'>attack_class_01 (1.000)</td></tr></tbody></table>
 
-<h2>What each row is</h2><dl class='notes'><dt>sigma-3</dt><dd>Baseline: &gt;3σ from the supplied behavioural baseline</dd><dt>naive-egress</dt><dd>Baseline: flags non-empty egress or pii_detected</dd><dt>always-benign</dt><dd>Baseline: predicts benign for every trace</dd><dt>always-attack</dt><dd>Baseline: predicts attack for every trace (cry wolf)</dd><dt>drift-tail</dt><dd>Baseline: sequence tail deviates from its own prefix (longitudinal; v2 only)</dd></dl>
+<h2>What each row is</h2><dl class='notes'><dt>AariaSec 3.0.0 (rules + fleet drift, persistence-gated)</dt><dd>Rule engine over each event requiring 2+ anomalous events rather than any one, OR a fleet-level coordinated-drift test scaled by standard error. IMPORTANT — neither component is wired into live alerting yet: a running install still fires on a single anomalous event, so it is NOISIER than the false-positive rate shown here and does not yet catch the multi-agent class. Read this row as a measured capability of the codebase, not of a deployment. Thresholds were calibrated on v2&#x27;s development split, so v3 is a genuine out-of-sample result for them.</dd><dt>drift-tail</dt><dd>Baseline: sequence tail deviates from its own prefix (longitudinal; v2 only)</dd><dt>sigma-3</dt><dd>Baseline: &gt;3σ from the supplied behavioural baseline</dd><dt>naive-egress</dt><dd>Baseline: flags non-empty egress or pii_detected</dd><dt>always-benign</dt><dd>Baseline: predicts benign for every trace</dd><dt>always-attack</dt><dd>Baseline: predicts attack for every trace (cry wolf)</dd></dl>
 
 <div class="howto">
 <h3>How to read these numbers</h3>
@@ -130,7 +134,7 @@ text cannot release their corpus without exposing customer prompts.</p>
 </dl>
 </div>
 
-<h2>Recall by archetype — AariaSec 3.0.0 (rule engine, baseline-aware)</h2><p class='sub'>Weakest first. Reported per archetype on purpose: a detector excellent on one attack class and wholly blind to another is a different product from a uniformly mediocre one, and one aggregate number hides exactly that.</p><div class='arch'><span>attack_class_10</span><span class="bar"><i style="width:0.0%"></i></span><span class='num'>0.000</span></div><div class='arch'><span>attack_class_09</span><span class="bar"><i style="width:47.8%"></i></span><span class='num'>0.478</span></div><div class='arch'><span>attack_class_04</span><span class="bar"><i style="width:50.0%"></i></span><span class='num'>0.500</span></div><div class='arch'><span>attack_class_11</span><span class="bar"><i style="width:54.2%"></i></span><span class='num'>0.542</span></div><div class='arch'><span>attack_class_08</span><span class="bar"><i style="width:55.6%"></i></span><span class='num'>0.556</span></div><div class='arch'><span>attack_class_02</span><span class="bar"><i style="width:61.9%"></i></span><span class='num'>0.619</span></div><div class='arch'><span>attack_class_05</span><span class="bar"><i style="width:64.7%"></i></span><span class='num'>0.647</span></div><div class='arch'><span>attack_class_12</span><span class="bar"><i style="width:64.7%"></i></span><span class='num'>0.647</span></div><div class='arch'><span>attack_class_03</span><span class="bar"><i style="width:65.2%"></i></span><span class='num'>0.652</span></div><div class='arch'><span>attack_class_07</span><span class="bar"><i style="width:78.6%"></i></span><span class='num'>0.786</span></div><div class='arch'><span>attack_class_06</span><span class="bar"><i style="width:85.0%"></i></span><span class='num'>0.850</span></div><div class='arch'><span>attack_class_01</span><span class="bar"><i style="width:100.0%"></i></span><span class='num'>1.000</span></div><div class='arch'><span>attack_class_13</span><span class="bar"><i style="width:100.0%"></i></span><span class='num'>1.000</span></div>
+<h2>Recall by archetype — AariaSec 3.0.0 (rules + fleet drift, persistence-gated)</h2><p class='sub'>Weakest first. Reported per archetype on purpose: a detector excellent on one attack class and wholly blind to another is a different product from a uniformly mediocre one, and one aggregate number hides exactly that.</p><div class='arch'><span>attack_class_12</span><span class="bar"><i style="width:71.4%"></i></span><span class='num'>0.714</span></div><div class='arch'><span>attack_class_10</span><span class="bar"><i style="width:80.0%"></i></span><span class='num'>0.800</span></div><div class='arch'><span>attack_class_04</span><span class="bar"><i style="width:87.5%"></i></span><span class='num'>0.875</span></div><div class='arch'><span>attack_class_11</span><span class="bar"><i style="width:92.3%"></i></span><span class='num'>0.923</span></div><div class='arch'><span>attack_class_01</span><span class="bar"><i style="width:100.0%"></i></span><span class='num'>1.000</span></div><div class='arch'><span>attack_class_02</span><span class="bar"><i style="width:100.0%"></i></span><span class='num'>1.000</span></div><div class='arch'><span>attack_class_03</span><span class="bar"><i style="width:100.0%"></i></span><span class='num'>1.000</span></div><div class='arch'><span>attack_class_05</span><span class="bar"><i style="width:100.0%"></i></span><span class='num'>1.000</span></div><div class='arch'><span>attack_class_06</span><span class="bar"><i style="width:100.0%"></i></span><span class='num'>1.000</span></div><div class='arch'><span>attack_class_07</span><span class="bar"><i style="width:100.0%"></i></span><span class='num'>1.000</span></div><div class='arch'><span>attack_class_08</span><span class="bar"><i style="width:100.0%"></i></span><span class='num'>1.000</span></div><div class='arch'><span>attack_class_09</span><span class="bar"><i style="width:100.0%"></i></span><span class='num'>1.000</span></div><div class='arch'><span>attack_class_13</span><span class="bar"><i style="width:100.0%"></i></span><span class='num'>1.000</span></div>
 
 <h2>Submitting</h2>
 <p>Run your detector over <code>holdout.jsonl</code> on your own hardware and send
@@ -145,7 +149,7 @@ let a detector raise its score by declining the hard cases. Latency is not ranke
 Seasons draw a fresh holdout from the same distributions, so scores decay rather
 than saturating. The generators are not published: releasing the sampler would let
 anyone mint unlimited training data and destroy both the holdout and the refresh
-mechanism. Season v1 is reproducible forever from a fixed seed
+mechanism. Season v3 is reproducible forever from a fixed seed
 and will not be re-cut.
 </div>
 

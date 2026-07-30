@@ -3,8 +3,19 @@
 **The agent-compromise detection benchmark.** Given behavioural telemetry and
 nothing else, can a monitoring system tell a compromised AI agent from a healthy one?
 
-📊 **[Leaderboard — season v1](https://aariasblueelephant-create.github.io/aariasec-pramana/)**
-· **[season v2](https://aariasblueelephant-create.github.io/aariasec-pramana/v2/)**
+📊 **[Leaderboard — season v3](https://aariasblueelephant-create.github.io/aariasec-pramana/)**
+
+> ### ⚠️ Seasons v1 and v2 are WITHDRAWN (2026-07-29)
+>
+> Both were defective as evaluations and **every score measured against them is void,
+> including ours** — a one-line detector, `response_length == 0`, scored balanced
+> 1.0000 on v2 and 0.9936 on v1, beating every real entry. If you have a v1 or v2
+> number, discard it.
+>
+> **[Full account of what broke and why → WITHDRAWN.md](WITHDRAWN.md)**
+>
+> Season **v3** replaces both, with the defect fixed and a build-time guard that
+> refuses to emit a corpus one field can solve.
 
 ---
 
@@ -29,15 +40,20 @@ redact. That architectural constraint is what makes the artifact possible.
 
 | | Trace unit | Traces | Status | Measures |
 |---|---|---|---|---|
-| **[v1](corpus/v1/)** | one event | 520 | **retired** — labels published | per-event discrimination |
-| **[v2](corpus/v2/)** | ordered sequence, 1–4 agents | 260 | **live** — labels withheld | longitudinal deviation + cross-agent coordination |
+| **[v3](corpus/v3/)** | ordered sequence, 1–4 agents | 260 | **live** — labels withheld | longitudinal deviation + cross-agent coordination |
+| ~~v1~~ | one event | 520 | **withdrawn** — defective | — |
+| ~~v2~~ | ordered sequence | 260 | **withdrawn** — defective | — |
 
-**Retired** means the labels are public, so you score yourself and anyone can verify
-it. **Live** means the labels are withheld — that's what stops the leaderboard being
-tuned against, and it's why the live season is scored by a human rather than by CI.
-Each new season retires the previous one.
+Three states, and the difference matters:
 
-Read the season's `SCHEMA.md` before submitting. **Especially the `baseline` field** —
+- **Live** — labels withheld. That's what stops the leaderboard being tuned against,
+  and why a live season is scored by a human rather than by CI.
+- **Retired** — sound, labels published. You score yourself and anyone can re-run it
+  and check you. Each new season normally retires the previous one.
+- **Withdrawn** — broken as an evaluation. Not a reference; discard it. No season
+  should ever reach this state, and two did.
+
+Read the season's `SCHEMA.md` before submitting. **Especially the `baselines` field** —
 behavioural detection is relative, and a detector that thresholds on absolute values
 scores far worse. Our own first reference run ignored it and flagged 520 of 520 traces.
 
@@ -49,34 +65,27 @@ Run your detector over `holdout.jsonl` on your own hardware. Send one line per t
 {"trace_id": "t_0f3c9a...", "verdict": "attack", "score": 0.91}
 ```
 
-Name the file `<detector>-<season>.jsonl` and open a PR adding it under
+Name the file `<detector>-v3.jsonl` and open a PR adding it under
 [`submissions/`](submissions/). **We never execute submitted code** — the only thing
 read from your PR is the data file, parsed by our scorer.
 
-**Retired season (v1) — score yourself, right now:**
+**v3 is live, so we score it.** Its labels are withheld, so CI can't. A maintainer
+scores it against the held-back labels and posts the result. Expect a few days; there
+is no automation and deliberately so — auto-scoring a live holdout lets a submitter
+recover one label per submission by flipping a single trace and watching recall move,
+and roughly 260 submissions would recover the whole answer key.
+
+When v3 retires, its labels are published and scoring becomes self-service:
 
 ```bash
-python score.py --labels corpus/v1/holdout_labels.jsonl \
-                --predictions my-detector-v1.jsonl
-```
-
-The labels are in the repo, so you get the number immediately and don't need us at
-all. Opening a PR runs the same command in CI and comments the result, so a reader
-can see it wasn't hand-typed.
-
-**Live season (v2) — we score it.** Its labels are withheld, so CI can't. A
-maintainer scores it against the held-back labels and posts the result. Expect a few
-days; there is no automation and deliberately so — auto-scoring a live holdout lets a
-submitter recover one label per submission by flipping a single trace and watching
-recall move, and roughly 520 submissions would recover the whole answer key.
-
-```bash
+python score.py --labels corpus/v3/holdout_labels.jsonl \
+                --predictions my-detector-v3.jsonl
 python score.py --self-check     # verifies the scorer against known extremes
 ```
 
-Attack classes in the published v1 labels read `attack_class_07` rather than a
-category name. Per-class recall works exactly the same — you can see which class you
-are weak on — we simply aren't publishing our threat taxonomy yet.
+Attack classes in published labels read `attack_class_07` rather than a category name.
+Per-class recall works exactly the same — you can see which class you are weak on — we
+simply aren't publishing our threat taxonomy yet.
 
 ## Scoring
 
@@ -90,49 +99,63 @@ are weak on — we simply aren't publishing our threat taxonomy yet.
 flagging nothing both score exactly **0.5**. That's the flaw in every agent-security
 benchmark we surveyed: score recall alone and a detector that cries wolf wins.
 
-**Recall is per archetype on purpose.** A detector strong on exfiltration and blind
-to cryptomining is a different product from a uniformly mediocre one, and one
+**Recall is per archetype on purpose.** A detector excellent on one attack class and
+blind to another is a different product from a uniformly mediocre one, and one
 aggregate hides exactly that.
 
 ## What the corpus refuses to reward
 
-If attack traces were longer, or the only multi-agent ones, you could score well by
-counting structure and detecting nothing. Trace length is constant across classes,
-and benign participant counts are drawn from the tallied attack marginal so they
-match by construction. Measured on the published v2 holdout:
+Assume a benchmark is gameable until someone has tried. Ours was, twice:
 
-| Shortcut | balanced |
+1. **The field set was the label.** The two generators emitted different fields, so
+   `"app_name" in trace` scored perfectly. Fixed by union-filling every event to a
+   common key set and making identifiers opaque.
+2. **The field values were the label** — introduced by the fix for (1), and the reason
+   v1 and v2 are withdrawn. See [WITHDRAWN.md](WITHDRAWN.md).
+
+v3 adds a **build-time guard** rather than relying on someone thinking to check: the
+builder searches every field, trying each observed value as an equality test and each
+numeric value as a threshold, and **refuses to emit a corpus** where any single field
+exceeds 0.85 balanced.
+
+| v3 shortcut | balanced |
 |---|---|
-| flag if `agent_count > 1` | 0.4821 |
-| flag if `agent_count == 4` | 0.4927 |
+| best single field (`tool_call_count > 4`) | **0.5673** |
+| flag if `agent_count > 1` | ~0.48 |
 | flag if `len(events) != 12` | 0.5000 |
 
-An earlier build **was** gameable — the two generators emitted different field sets,
-so nine fields separated the classes at accuracy 1.00. That's fixed by union-filling
-every event to a common key set and making identifiers opaque. We mention it because
-you should assume a benchmark is gameable until someone has tried.
+Trace length is constant across classes and benign participant counts are drawn from
+the tallied attack marginal, so structure carries no signal.
 
 ## Where we score
 
-We publish our own results, including where we lose:
+We publish our own results, including where we lose. All on the v3 held-out split:
 
-| Detector | v1 | v2 | `attack_class_10` (v2) |
+| Detector | balanced | recall | FP |
 |---|---|---|---|
-| `drift-tail` — longitudinal baseline, ~40 lines | 0.5000 | **0.9308** | **1.000** |
-| AariaSec 3.0.0 | **0.8126** | 0.8538 | **0.000** |
-| `sigma-3` — per-event, baseline-relative | 0.6807 | 0.8139 | 0.100 |
-| `naive-egress` — two field checks | 0.6625 | 0.6846 | 0.100 |
+| AariaSec 3.0.0 | **0.9505** | 0.9471 | 0.0462 |
+| `drift-tail` — longitudinal baseline, ~40 lines | 0.9115 | 0.9846 | 0.1615 |
+| `sigma-3` — per-event, baseline-relative | 0.7968 | 0.6704 | 0.0769 |
+| `naive-egress` — two field checks | 0.6577 | 0.7769 | 0.4615 |
+| `always-attack` / `always-benign` | 0.5000 | 1.0 / 0.0 | 1.0 / 0.0 |
 
-A forty-line longitudinal baseline beats us on v2, and we score **zero** on sybil
-coordination where it scores one. Those are real gaps in our product. A benchmark
-that only embarrasses other people is marketing.
+A forty-line longitudinal baseline is within four points of us. Our weakest class sits
+at 0.714 recall and the coordinated multi-agent class at 0.800 — both published,
+because a benchmark that only embarrasses other people is marketing.
+
+**One caveat we'd rather state than have found:** the fleet-level and persistence
+components of our own entry are not yet wired into live alerting. A running AariaSec
+install fires on a single anomalous event, so it is noisier than the false-positive
+rate above and does not yet catch the coordinated multi-agent class. That row measures
+the codebase, not a deployment.
 
 ## Reproducibility
 
-Each season is generated from parameterized distributions under a fixed seed
-recorded in its `MANIFEST.json`, and is byte-reproducible. Published seasons are
-never re-cut. Later seasons draw fresh holdouts, so scores decay rather than
-saturating.
+Each season is generated from parameterized distributions under a fixed seed recorded
+in its `MANIFEST.json`, and is byte-reproducible. Published seasons are never re-cut —
+a defect is corrected by cutting a new season and withdrawing the old one, never by
+quietly editing a published one. Later seasons draw fresh holdouts, so scores decay
+rather than saturating.
 
 The generators are not published: releasing the sampler would let anyone mint
 unlimited training data and destroy both the holdout and the refresh mechanism.
