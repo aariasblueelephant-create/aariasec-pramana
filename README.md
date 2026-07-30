@@ -3,7 +3,7 @@
 **The agent-compromise detection benchmark.** Given behavioural telemetry and
 nothing else, can a monitoring system tell a compromised AI agent from a healthy one?
 
-📊 **[Leaderboard — season v3](https://aariasblueelephant-create.github.io/aariasec-pramana/)**
+📊 **[Leaderboard — season v3](https://pramana.aariasec.com/)**
 
 > ### ⚠️ Seasons v1 and v2 are WITHDRAWN (2026-07-29)
 >
