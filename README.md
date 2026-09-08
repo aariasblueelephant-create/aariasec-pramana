@@ -67,7 +67,13 @@ Run your detector over `holdout.jsonl` on your own hardware. Send one line per t
 
 Name the file `<detector>-v3.jsonl` and open a PR adding it under
 [`submissions/`](submissions/). **We never execute submitted code** — the only thing
-read from your PR is the data file, parsed by our scorer.
+read from your PR is the data file, parsed by our scorer. Don't want to hand-format
+the JSONL yourself? [`submit_helper.py`](submit_helper.py) wraps your detector
+function and writes it for you — still runs on your own hardware, still your PR:
+
+```bash
+python3 submit_helper.py --detector mymodule:my_detect_fn --name myvendor
+```
 
 **v3 is live, so we score it.** Its labels are withheld, so CI can't. A maintainer
 scores it against the held-back labels and posts the result. Expect a few days; there
